@@ -1,5 +1,14 @@
 import paho.mqtt.client as mqttClient
 import time
+from sqlalchemy.orm import Session
+from .database import get_db
+from fastapi import Depends
+from . import models
+from sqlalchemy import desc
+import json
+import geopy.distance
+
+THRESH_DISTANCE = 50
   
 def on_connect(client, userdata, flags, rc):
   
@@ -14,9 +23,24 @@ def on_connect(client, userdata, flags, rc):
   
         print("Connection failed")
   
-def on_message(client, userdata, message):
+def on_message(client, userdata, message, db: Session = next(get_db())):
     print(message.payload.decode())
-  
+    data = json.loads(message.payload.decode())
+    last_record = db.query(models.DeviceInfo).order_by(desc(models.DeviceInfo.created_at)).first()
+    if last_record == None:
+        new_record = models.DeviceInfo(longtitude = data["longtitude"], latitude = data["latitude"])
+        db.add(new_record)
+        db.commit()
+    else:
+        last_coord = (last_record.latitude, last_record.longtitude)
+        new_coord = (data["latitude"], data["longtitude"])
+        distance = geopy.distance.geodesic(last_coord, new_coord).meters
+        print(distance)
+        if (distance > THRESH_DISTANCE):
+            new_record = models.DeviceInfo(longtitude = data["longtitude"], latitude = data["latitude"])
+            db.add(new_record)
+            db.commit()
+
 Connected = False   #global variable for the state of the connection
   
 broker_address= "mqtt.innoway.vn"  #Broker address
@@ -43,7 +67,7 @@ def process_mqtt():
         while True:
             time.sleep(1)
     
-    except:
+    except KeyboardInterrupt: 
         print("exiting")
         client.disconnect()
         client.loop_stop()

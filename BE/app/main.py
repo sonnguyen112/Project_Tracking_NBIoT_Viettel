@@ -1,9 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from . import models
 from .database import engine
 import threading
 from .process_mqtt import process_mqtt
+from sqlalchemy.orm import Session
+from .database import get_db
+from typing import List
 
 # Drop all tables
 models.Base.metadata.drop_all(engine)
@@ -29,6 +32,12 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+@app.get("/info")
+async def get_info(db: Session = Depends(get_db)):
+    records = db.query(models.DeviceInfo).all()
+    return records
+
 
 mqtt_thread = threading.Thread(target=process_mqtt)
 mqtt_thread.start()
