@@ -24,22 +24,27 @@ def on_connect(client, userdata, flags, rc):
         print("Connection failed")
   
 def on_message(client, userdata, message, db: Session = next(get_db())):
-    print(message.payload.decode())
-    data = json.loads(message.payload.decode())
-    last_record = db.query(models.DeviceInfo).order_by(desc(models.DeviceInfo.created_at)).first()
-    if last_record == None:
-        new_record = models.DeviceInfo(longtitude = data["longtitude"], latitude = data["latitude"])
-        db.add(new_record)
-        db.commit()
-    else:
-        last_coord = (last_record.latitude, last_record.longtitude)
-        new_coord = (data["latitude"], data["longtitude"])
-        distance = geopy.distance.geodesic(last_coord, new_coord).meters
-        print(distance)
-        if (distance > THRESH_DISTANCE):
+    try:
+        print(message.payload.decode())
+        data = json.loads(message.payload.decode())
+        if (data["latitude"] <= -90 or data["latitude"] >= 90) or (data["longtitude"] <= -180 or data["longtitude"] >=180):
+            return
+        last_record = db.query(models.DeviceInfo).order_by(desc(models.DeviceInfo.created_at)).first()
+        if last_record == None:
             new_record = models.DeviceInfo(longtitude = data["longtitude"], latitude = data["latitude"])
             db.add(new_record)
             db.commit()
+        else:
+            last_coord = (last_record.latitude, last_record.longtitude)
+            new_coord = (data["latitude"], data["longtitude"])
+            distance = geopy.distance.geodesic(last_coord, new_coord).meters
+            print(distance)
+            if (distance > THRESH_DISTANCE):
+                new_record = models.DeviceInfo(longtitude = data["longtitude"], latitude = data["latitude"])
+                db.add(new_record)
+                db.commit()
+    except:
+        pass
 
 Connected = False   #global variable for the state of the connection
   

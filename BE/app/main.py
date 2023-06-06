@@ -7,9 +7,10 @@ from .process_mqtt import process_mqtt
 from sqlalchemy.orm import Session
 from .database import get_db
 from typing import List
+import multiprocessing
 
 # Drop all tables
-models.Base.metadata.drop_all(engine)
+# models.Base.metadata.drop_all(engine)
 
 # Create all tables
 models.Base.metadata.create_all(engine)
@@ -39,5 +40,5 @@ async def get_info(db: Session = Depends(get_db)):
     return records
 
 
-mqtt_thread = threading.Thread(target=process_mqtt)
-mqtt_thread.start()
+mqtt_process= multiprocessing.Process(target=process_mqtt)
+mqtt_process.start()

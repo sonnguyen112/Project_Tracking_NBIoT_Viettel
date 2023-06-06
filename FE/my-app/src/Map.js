@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { GoogleMap, InfoWindowF, MarkerF } from "@react-google-maps/api";
+
+const DOMAIN_NAME = process.env.REACT_APP_DOMAIN_NAME_BE
 
 // const markers = [
 //   {
@@ -12,7 +14,7 @@ import { GoogleMap, InfoWindowF, MarkerF } from "@react-google-maps/api";
 //     name: "Denver, Colorado",
 //     position: { lat: 39.739235, lng: -104.99025 }
 //   },
-//   {
+//   { 
 //     id: 3,
 //     name: "Los Angeles, California",
 //     position: { lat: 34.052235, lng: -118.243683 }
@@ -29,43 +31,44 @@ function Map() {
   const [markers, setMarkers] = useState([])
   const prevMarkers = useRef("")
   const [isLoadDone, setIsLoadDone] = useState(false)
+  const [map, setMap] = useState(null);
 
-  useEffect(()=>{
+  useEffect(() => {
     prevMarkers.current = markers
   }, [markers])
 
   useEffect(() => {
     const interval = setInterval(() => {
       // console.log('This will run every second!');
-      fetch("http://localhost:8000/info")
-      .then((res)=>res.json())
-      .then((json)=>{
-        // console.log(json)
-        let infos = []
-        let info;
-        for (let i = 0; i < json.length; i++){
-          info = {
-            id : json[i].id,
-            name: "Hello",
-            position: {
-              lat: json[i].latitude,
-              lng: json[i].longtitude
+      fetch(`${DOMAIN_NAME}/info`)
+        .then((res) => res.json())
+        .then((json) => {
+          // console.log(json)
+          let infos = []
+          let info;
+          for (let i = 0; i < json.length; i++) {
+            info = {
+              id: json[i].id,
+              name: "Hello",
+              position: {
+                lat: json[i].latitude,
+                lng: json[i].longtitude
+              }
             }
+            infos.push(info)
           }
-          infos.push(info)
-        }
-        
-        if (JSON.stringify(infos) !== JSON.stringify(prevMarkers.current)){
-          console.log("Change")
-          setMarkers(infos)
-        }
-        setIsLoadDone(true)
-      })
+
+          if (JSON.stringify(infos) !== JSON.stringify(prevMarkers.current)) {
+            console.log("Change")
+            setMarkers(infos)
+          }
+          setIsLoadDone(true)
+        })
     }, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log(markers)
   }, [markers, setMarkers])
 
@@ -76,17 +79,21 @@ function Map() {
     setActiveMarker(marker);
   };
 
-  const handleOnLoad = (map) => {
-    const bounds = new window.google.maps.LatLngBounds();
-    console.log("Mark: ",markers)
-    markers.forEach(({ position }) => bounds.extend(position));
-    map.fitBounds(bounds);
-  };
+  useEffect(() => {
+    if (map) {
+      const bounds = new window.google.maps.LatLngBounds();
+      console.log("Mark: ", markers)
+      markers.forEach(({ position }) => bounds.extend(position));
+      map.fitBounds(bounds);
+    }
+  }, [map, markers])
 
-  if (isLoadDone){
+  const onLoad = useCallback((map) => setMap(map), []);
+
+  if (isLoadDone) {
     return (
       <GoogleMap
-        onLoad={handleOnLoad}
+        onLoad={onLoad}
         onClick={() => setActiveMarker(null)}
         mapContainerStyle={{ width: "100vw", height: "100vh" }}
       >
@@ -98,7 +105,10 @@ function Map() {
           >
             {activeMarker === id ? (
               <InfoWindowF onCloseClick={() => setActiveMarker(null)}>
-                <div>{name}</div>
+                <div>
+                  <div>Longitude: {position.lng}</div>
+                  <div>Latitude: {position.lat}</div>
+                </div>
               </InfoWindowF>
             ) : null}
           </MarkerF>
@@ -106,7 +116,7 @@ function Map() {
       </GoogleMap>
     );
   }
-  else{
+  else {
     return
   }
 }
