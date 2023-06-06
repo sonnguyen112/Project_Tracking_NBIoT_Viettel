@@ -27,20 +27,36 @@ def on_message(client, userdata, message, db: Session = next(get_db())):
     try:
         print(message.payload.decode())
         data = json.loads(message.payload.decode())
-        if (data["latitude"] <= -90 or data["latitude"] >= 90) or (data["longtitude"] <= -180 or data["longtitude"] >=180):
+        if (data["Latitude"] <= -90 or data["Latitude"] >= 90) or (data["Longitude"] <= -180 or data["Longitude"] >=180):
             return
         last_record = db.query(models.DeviceInfo).order_by(desc(models.DeviceInfo.created_at)).first()
         if last_record == None:
-            new_record = models.DeviceInfo(longtitude = data["longtitude"], latitude = data["latitude"])
+            new_record = models.DeviceInfo(
+                longtitude = data["Longitude"], 
+                latitude = data["Latitude"],
+                RSRP=data["RSRP"],
+                RSRQ=data["RSRQ"],
+                SINR=data["SINR"],
+                PCI=data["PCI"],
+                CELLID=data["CELLID"]
+                )
             db.add(new_record)
             db.commit()
         else:
             last_coord = (last_record.latitude, last_record.longtitude)
-            new_coord = (data["latitude"], data["longtitude"])
+            new_coord = (data["Latitude"], data["Longitude"])
             distance = geopy.distance.geodesic(last_coord, new_coord).meters
             print(distance)
             if (distance > THRESH_DISTANCE):
-                new_record = models.DeviceInfo(longtitude = data["longtitude"], latitude = data["latitude"])
+                new_record = models.DeviceInfo(
+                longtitude = data["Longitude"], 
+                latitude = data["Latitude"],
+                RSRP=data["RSRP"],
+                RSRQ=data["RSRQ"],
+                SINR=data["SINR"],
+                PCI=data["PCI"],
+                CELLID=data["CELLID"]
+                )
                 db.add(new_record)
                 db.commit()
     except:

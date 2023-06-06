@@ -9,5 +9,8 @@ class DeviceInfo(Base):
     latitude = Column(FLOAT, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, 
         server_default=text("now()"))
-    
-    
+    RSRP = Column(FLOAT, nullable=False)
+    RSRQ = Column(FLOAT, nullable=False)
+    SINR = Column(FLOAT, nullable=False)
+    PCI = Column(FLOAT, nullable=False)
+    CELLID = Column(Integer, nullable=False)

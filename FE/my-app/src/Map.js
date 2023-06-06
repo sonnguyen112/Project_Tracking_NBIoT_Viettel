@@ -49,11 +49,15 @@ function Map() {
           for (let i = 0; i < json.length; i++) {
             info = {
               id: json[i].id,
-              name: "Hello",
               position: {
                 lat: json[i].latitude,
                 lng: json[i].longtitude
-              }
+              },
+              RSRP:json[i].RSRQ,
+              RSRQ:json[i].RSRQ,
+              SINR:json[i].SINR,
+              PCI:json[i].PCI,
+              CELLID:json[i].CELLID
             }
             infos.push(info)
           }
@@ -97,7 +101,7 @@ function Map() {
         onClick={() => setActiveMarker(null)}
         mapContainerStyle={{ width: "100vw", height: "100vh" }}
       >
-        {markers.map(({ id, name, position }) => (
+        {markers.map(({ id, position, RSRP, RSRQ, SINR, PCI, CELLID }) => (
           <MarkerF
             key={id}
             position={position}
@@ -108,6 +112,11 @@ function Map() {
                 <div>
                   <div>Longitude: {position.lng}</div>
                   <div>Latitude: {position.lat}</div>
+                  <div>RSRP: {RSRP}</div>
+                  <div>RSRQ: {RSRQ}</div>
+                  <div>SINR: {SINR}</div>
+                  <div>PCI: {PCI}</div>
+                  <div>CELLID: {CELLID}</div>
                 </div>
               </InfoWindowF>
             ) : null}
