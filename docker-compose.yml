@@ -1,0 +1,34 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=Son[1122002]
+      - POSTGRES_DB=devicedb
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+  frontend:
+    build: ./FE/my-app
+    depends_on:
+      - backend
+    ports:
+      - 3000:3000
+    environment:
+      - REACT_APP_DOMAIN_NAME_BE=https://xrsufz-ip-113-162-182-149.tunnelmole.com
+  backend:
+    build: ./BE
+    depends_on:
+      - postgres
+    ports:
+      - 8000:8000
+    environment:
+      - database_hostname=postgres
+      - database_port=5432
+      - database_username=postgres
+      - database_password=Son[1122002]
+      - database_name=devicedb
+
+volumes:
+  postgres-db:
