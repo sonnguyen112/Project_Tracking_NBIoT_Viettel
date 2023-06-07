@@ -4,7 +4,7 @@ import "./styles.css";
 
 export default function App() {
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: "AIzaSyCZGuGc_SaQ2m2yWxaO1SBvKgofTqvAX7g" // Add your API key
+    googleMapsApiKey: "AIzaSyAlNOH3tqHXo0ZZYYQegZQZbPqUI3fcWME" // Add your API key
   });
 
   return isLoaded ? <Map /> : null;

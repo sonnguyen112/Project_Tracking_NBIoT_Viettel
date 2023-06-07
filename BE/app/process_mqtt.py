@@ -66,7 +66,7 @@ Connected = False   #global variable for the state of the connection
   
 broker_address= "mqtt.innoway.vn"  #Broker address
 port = 1883                         #Broker port
-user = "test_user"                    #Connection username
+user = "dev_user"                    #Connection username
 password = "bSRmI734p6Km2YhLR6wdkqy1x7NHsj33"            #Connection password
   
 client = mqttClient.Client("Python")               #create new instance

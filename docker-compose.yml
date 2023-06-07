@@ -16,7 +16,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_DOMAIN_NAME_BE=https://xrsufz-ip-113-162-182-149.tunnelmole.com
+      - REACT_APP_DOMAIN_NAME_BE=https://f90d-125-235-234-121.ngrok-free.app
   backend:
     build: ./BE
     depends_on:
