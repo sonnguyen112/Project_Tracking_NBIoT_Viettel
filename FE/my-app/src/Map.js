@@ -33,6 +33,19 @@ function Map() {
   const [isLoadDone, setIsLoadDone] = useState(false)
   const [map, setMap] = useState(null);
 
+  const get_color = (RSRQ) => {
+    console.log("Get color")
+    if (RSRQ >= -10) {
+      return "green"
+    }
+    else if (RSRQ >= -15){
+      return "yellow"
+    }
+    else{
+      return "red"
+    }
+  }
+
   useEffect(() => {
     prevMarkers.current = markers
   }, [markers])
@@ -40,7 +53,7 @@ function Map() {
   useEffect(() => {
     const interval = setInterval(() => {
       // console.log('This will run every second!');
-      fetch(`${DOMAIN_NAME}/info`)
+      fetch(`${DOMAIN_NAME}/info`, {headers:{"ngrok-skip-browser-warning":"1"}})
         .then((res) => res.json())
         .then((json) => {
           // console.log(json)
@@ -53,7 +66,7 @@ function Map() {
                 lat: json[i].latitude,
                 lng: json[i].longtitude
               },
-              RSRP:json[i].RSRQ,
+              RSRP:json[i].RSRP,
               RSRQ:json[i].RSRQ,
               SINR:json[i].SINR,
               PCI:json[i].PCI,
@@ -94,6 +107,36 @@ function Map() {
 
   const onLoad = useCallback((map) => setMap(map), []);
 
+  const iconMarkerRed = new window.google.maps.MarkerImage(
+    "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+    null,
+    null,
+    null,
+    new window.google.maps.Size(64, 64)
+  );
+
+  const iconMarkerGreen = new window.google.maps.MarkerImage(
+    "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+    null,
+    null,
+    null,
+    new window.google.maps.Size(64, 64)
+  );
+
+  const iconMarkerYellow = new window.google.maps.MarkerImage(
+    "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+    null,
+    null,
+    null,
+    new window.google.maps.Size(64, 64)
+  );
+
+  const getIcon = (color)=>{
+    if (color === "red") return iconMarkerRed
+    else if (color === "green") return iconMarkerGreen
+    else if (color === "yellow") return iconMarkerYellow
+  }
+
   if (isLoadDone) {
     return (
       <GoogleMap
@@ -103,6 +146,7 @@ function Map() {
       >
         {markers.map(({ id, position, RSRP, RSRQ, SINR, PCI, CELLID }) => (
           <MarkerF
+	    icon= {getIcon(get_color(RSRQ))}
             key={id}
             position={position}
             onClick={() => handleActiveMarker(id)}
