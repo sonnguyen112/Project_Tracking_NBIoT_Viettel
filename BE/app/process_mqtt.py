@@ -22,7 +22,15 @@ def on_connect(client, userdata, flags, rc):
     else:
   
         print("Connection failed")
-  
+
+def get_quality(RSRQ):
+    if RSRQ >= -10:
+        return "good"
+    elif RSRQ >= -15:
+        return "ok"
+    else:
+        return "bad" 
+ 
 def on_message(client, userdata, message, db: Session = next(get_db())):
     try:
         print(message.payload.decode())
@@ -59,6 +67,22 @@ def on_message(client, userdata, message, db: Session = next(get_db())):
                 )
                 db.add(new_record)
                 db.commit()
+        all_record = db.query(models.DeviceInfo).order_by(desc(models.DeviceInfo.created_at)).all()
+        for record in all_record:
+            if geopy.distance.geodesic((record.latitude, record.longtitude), (data["Latitude"], data["Longitude"])).meters <= THRESH_DISTANCE:
+                 if get_quality(data["RSRQ"]) != get_quality(record.RSRQ):
+                    record_query = db.query(models.DeviceInfo).filter(models.DeviceInfo.id==record.id)
+                    record_query.update({
+                        "longtitude" : data["Longitude"], 
+                        "latitude" : data["Latitude"],
+                        "RSRP":data["RSRP"],
+                        "RSRQ":data["RSRQ"],
+                        "SINR":data["SINR"],
+                        "PCI":data["PCI"],
+                        "CELLID":data["CELLID"]
+                    })
+                    db.commit()
+                    break 
     except:
         pass
 

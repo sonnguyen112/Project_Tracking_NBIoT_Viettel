@@ -8,6 +8,4 @@ RUN npm install --force
 
 COPY . .
 
-RUN npm run build
-
-CMD [ "serve", "-s", "build"]
+CMD [ "npm", "start"]

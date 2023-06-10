@@ -8,7 +8,7 @@ from .database import get_db
 from typing import List
 
 # Drop all tables
-models.Base.metadata.drop_all(engine)
+# models.Base.metadata.drop_all(engine)
 
 # Create all tables
 models.Base.metadata.create_all(engine)
@@ -28,10 +28,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.options("/")
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
+@app.options("/info")
 @app.get("/info")
 async def get_info(db: Session = Depends(get_db)):
     records = db.query(models.DeviceInfo).all()
